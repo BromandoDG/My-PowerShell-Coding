@@ -1,0 +1,183 @@
+#Adding Assemblys
+
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+#### This next section will be used to create the assets used in the form ####
+
+    #Creating the main form and how it looks and the Icon that goes with it.
+
+    $main_form = New-Object System.Windows.Forms.Form
+
+    $iconPath = \\0051MBLJTR0DF3\C$\TESTING\iconlogo.ico
+
+    $icon = New-Object System.Drawing.Icon($iconPath)
+
+    $main_form.Icon = $icon
+
+    $main_form.Text = 'Technology Support Button'
+
+    $main_form.Width = 610
+
+    $main_form.Height = 400
+
+    $main_form.AutoSize = $false
+
+    $main_form.Topmost = $true
+
+    $main_form.MaximizeBox = $false
+
+    $main_form.FormBorderStyle = 'Fixed3D'
+
+ 
+
+    #Creating the Woodforest Logo at the top of the form.
+
+    $pictureBox = New-Object System.Windows.Forms.PictureBox
+
+    $pictureBox.Image = [System.Drawing.Image]::FromFile(\\0051MBLJTR0DF3\C$\TESTING\headerlogo.png)
+
+    $pictureBox.Location = New-Object System.Drawing.Point(125, 0) # Change the numbers to position the image
+
+    $pictureBox.Width = $pictureBox.Image.Width
+
+    $pictureBox.Height = $pictureBox.Image.Height
+
+ 
+
+    #Creating the Box Around the atrritubes displayed.
+
+    $groupBox = New-Object System.Windows.Forms.GroupBox
+
+    $groupBox.Text = 'Computer Information'
+
+    $groupBox.Location = New-Object System.Drawing.Point(1,75) # Change the numbers to position the GroupBox
+
+    $groupBox.Width = 590
+
+    $groupBox.Height = 190
+
+ 
+
+    #Creating the button that is allowed to be clicked and you to be taken to the Service Now Website
+
+    $button = New-Object Windows.Forms.Button
+
+    $button.Text = "Click Here To Open A Technology Support Ticket"
+
+    $button.ForeColor = [System.Drawing.Color]::White
+
+    $button.Font = New-Object System.Drawing.Font("Times New Roman", 20)
+
+    $button.Location = New-Object Drawing.Point(125,275)
+
+    $button.Width = 350
+
+    $button.Height = 75
+
+    $button.BackColor = [System.Drawing.Color]::Green
+
+    $button.Add_Click({
+
+    $url = https://woodforest.service-now.com/sp?id=sc_cat_item&sys_id=906528a10a0a0bf000a85bc20dfb6541
+
+    Start-Process $url
+
+    })
+
+ 
+
+#################################################################################
+
+ 
+
+####The following sections is creating labels on the form. These lables will be used to clearly identify each Attribute we gather form the PC.####
+
+ 
+
+    #Creating the label for "COmputer Name and how we want it formatted"
+
+    $Label_ComputerName = New-Object System.Windows.Forms.Label
+
+    $Label_ComputerName.Font = New-Object System.Drawing.Font("Times New Roman", 20)
+
+    $Label_ComputerName.Location = New-Object System.Drawing.Point(10, 100)
+
+    $Label_ComputerName.AutoSize = $true
+
+    $main_form.Controls.Add($Label_ComputerName)
+
+ 
+
+    #Creating the label for "IPv4Address" and how we want it formatted"
+
+    $Label_IPv4Address = New-Object System.Windows.Forms.Label
+
+    $Label_IPv4Address.Font = New-Object System.Drawing.Font("Times New Roman", 20)
+
+    $Label_IPv4Address.Location = New-Object System.Drawing.Point(10, 150)
+
+    $Label_IPv4Address.AutoSize = $true
+
+    $main_form.Controls.Add($Label_IPv4Address)
+
+ 
+
+    #Creating the label for "Mac Address" and how we want iy formatted.
+
+    $Label_MacAddress = New-Object System.Windows.Forms.Label
+
+    $Label_MacAddress.Font = New-Object System.Drawing.Font("Times New Roman", 20)
+
+    $Label_MacAddress.Location = New-Object System.Drawing.Point(10, 200)
+
+    $Label_MacAddress.AutoSize = $true
+
+    $main_form.Controls.Add($Label_MacAddress)
+
+ 
+
+#################################################################################
+####This Next Section Deals with gathering the PC's Information and then assigning the output as Text to the Labels.####
+
+ 
+
+    # We are Getting the computer name from the Host Computer and assigning it to Variable $ComputerName#
+
+    $ComputerName = $env:COMPUTERNAME
+
+ 
+
+    # We are Getting the IPv4 Address from the host computer using the cmdlet Get-NetIPaddress and filtering for our desires output. I.E Any Ip Address that is similiar to "10." and giving us the first option.
+
+    $IPv4Address = (Get-NetIPAddress | Where-Object { $_.IPv4Address -Like '10.*' }).IPAddress | Select-Object -First 1
+
+ 
+
+    # We are getting the MAC Address from the host computer by using the cmdlet "Get-NetAdapter" and then filtering it by any results that are equal to "Up" and not equal to "Cisco AnyConnect Secure Mobility Client" and selecintg the first output.
+
+    $MacAddress = (Get-NetAdapter | Where-Object { $_.Status -eq 'Up' -and $_.InterfaceDescription -ne 'Cisco AnyConnect Secure Mobility Client' }).MacAddress | Select-Object -First 1
+
+ 
+
+    #Now we assigning out outpus from each of the previous informaiton gathering tools and adding them to the labels as text
+
+    $Label_ComputerName.Text = "Computer Name: $ComputerName "
+
+    $Label_IPv4Address.Text = "IPv4 Address: $IPv4Address "
+
+    $Label_MacAddress.Text = "MAC Address: $MacAddress "
+
+#################################################################################
+#### This Next Section is used for pulling all the reources and displaying them on the screen ####
+
+#Adding the Woodforest Pictures
+$main_form.Controls.Add($pictureBox)
+#Adding the labels for each of the attributes we gathered.
+$groupBox.Controls.Add($label)
+#Adding the "Click here to open a Tech Support ticket button"
+$main_form.Controls.Add($button)
+# Adding the bo around the Attributes gathered
+$main_form.Controls.Add($groupBox)
+# Displaying the Entire form.
+$main_form.ShowDialog()
