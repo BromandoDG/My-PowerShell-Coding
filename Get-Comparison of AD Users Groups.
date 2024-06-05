@@ -1,0 +1,51 @@
+#This script is used for Comparing what Active Diretory Groups two users have in common.
+
+Try {
+
+    Write-Host "`n"
+
+# Prompt the user to Enter In the two usernames that want to compare.
+
+    $User1 = Read-Host "Enter the first Active Directory username"
+
+    $User2 = Read-Host "Enter the second Active Directory username"
+
+ 
+
+# Getting group memberships for User1 and User2 using Powershell CMDLET and storing them as variables.
+
+    $GroupsUser1 = Get-ADPrincipalGroupMembership -Identity $User1
+
+    $GroupsUser2 = Get-ADPrincipalGroupMembership -Identity $User2
+
+ 
+
+# Comparing the groups and then assigning a variable to the output.
+
+    $GroupsOnlyInUser1 = Compare-Object -ReferenceObject $GroupsUser1 -DifferenceObject $GroupsUser2 -Property Name -IncludeEqual | Where-Object { $_.SideIndicator -eq "<=" }
+
+    $GroupsOnlyInUser2 = Compare-Object -ReferenceObject $GroupsUser1 -DifferenceObject $GroupsUser2 -Property Name -IncludeEqual | Where-Object { $_.SideIndicator -eq "=>" }
+
+ 
+
+# Display the results.
+
+    Write-Host "`n","These are the groups that $User1 exclusively belongs to after comparison :","`n"
+
+    $GroupsOnlyInUser1 | ForEach-Object { Write-Host "- $($_.Name)" }
+
+    Write-Host "`n","These are the groups that $User2 exclusively belongs to after comparison :","`n"
+
+    $GroupsOnlyInUser2 | ForEach-Object { Write-Host "- $($_.Name)" }
+
+    Write-Host "`n","Common groups among users are not shown. Additionally, if a user’s output appears empty, it means that all the groups they belong to match those of the compared user.","`n"
+
+       }
+
+catch {
+
+    Write-Host ''
+
+    Write-Host "An Error seems to have occured, try running the script again or double check that you are using the correct usernames."
+
+}
